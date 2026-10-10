@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المعلمة - برنامج القراءة الإنجليزية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="min-h-screen flex flex-col">
+        <!-- شريط التنقل العلوي -->
+        <header class="bg-indigo-700 text-white shadow-md">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <div class="bg-white p-2 rounded-full text-indigo-700 font-bold text-xl w-10 h-10 flex items-center justify-center">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold">برنامج القراءة الإنجليزية</h1>
+                        <p class="text-xs text-indigo-200">لوحة تحكم المعلمة</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span id="teacherNameDisplay" class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm font-semibold">أ/ بشائر السريع</span>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-sm transition"><i class="fa-solid fa-right-from-bracket ml-1"></i> خروج</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="container mx-auto px-4 py-8 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- القائمة الجانبية للتنقل بين الأقسام -->
+            <aside class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 h-fit space-y-2">
+                <button onclick="switchTab('classes')" id="btn-classes" class="w-full text-right px-4 py-3 rounded-xl font-semibold transition bg-indigo-50 text-indigo-700 flex items-center">
+                    <i class="fa-solid fa-chalkboard-user ml-3"></i> فصولي الدراسية
+                </button>
+                <button onclick="switchTab('upload')" id="btn-upload" class="w-full text-right px-4 py-3 rounded-xl font-semibold transition text-gray-600 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-up ml-3"></i> رفع قصة جديدة & AI
+                </button>
+                <button onclick="switchTab('reports')" id="btn-reports" class="w-full text-right px-4 py-3 rounded-xl font-semibold transition text-gray-600 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-chart-line ml-3"></i> تقارير قراءة الطالبات
+                </button>
+                <button onclick="switchTab('badges')" id="btn-badges" class="w-full text-right px-4 py-3 rounded-xl font-semibold transition text-gray-600 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-award ml-3"></i> منح الشارات والتكريم
+                </button>
+            </aside>
+
+            <!-- مساحة العمل الديناميكية -->
+            <section class="lg:col-span-3 space-y-6">
+                
+                <!-- قسم الفصول الدراسية -->
+                <div id="tab-classes" class="tab-content space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fa-solid fa-school text-indigo-600 ml-2"></i> الفصول المسؤولة عنها
+                        </h2>
+                        <p class="text-sm text-gray-500 mb-6">اختر الفصل لعرض قائمة الطالبات المودعات ومتابعة أدائهن القرائي.</p>
+                        
+                        <!-- شبكة الفصول (تتغير ديناميكياً حسب المعلمة) -->
+                        <div id="classesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- سيتم تعبئتها عبر الجافاسكريبت -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم رفع قصة وتوليد الأسئلة بالذكاء الاصطناعي -->
+                <div id="tab-upload" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fa-solid fa-robot text-indigo-600 ml-2"></i> رفع قصة جديدة وتوليد الأسئلة (AI)
+                        </h2>
+                        <form id="storyForm" onsubmit="handleStoryUpload(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">اختر الفصل المستهدف:</label>
+                                <select id="uploadClassSelect" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    <!-- تعبئة تلقائية -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">عنوان القصة (بالإنجليزية أو العربية):</label>
+                                <input type="text" id="storyTitle" required placeholder="e.g. The Brave Little Kite" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">ملف القصة (PDF):</label>
+                                <input type="file" id="storyFile" accept=".pdf" required class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            </div>
+                            <div class="pt-2">
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 rounded-xl transition flex items-center justify-center">
+                                    <i class="fa-solid fa-wand-magic-sparkles ml-2"></i> رفع القصة وتوليد أسئلة الفهم (AI) تلقائياً
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- معاينة الأسئلة المولدة بالذكاء الاصطناعي -->
+                    <div id="aiQuestionsContainer" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hidden">
+                        <h3 class="font-bold text-lg text-gray-800 mb-3 text-indigo-700"><i class="fa-solid fa-check-circle ml-2"></i> تم توليد الأسئلة بنجاح بناءً على مستوى صعوبة القصة!</h3>
+                        <div id="generatedQuestionsList" class="space-y-3 bg-indigo-50 p-4 rounded-xl text-sm">
+                            <!-- الأسئلة المقترحة -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم تقارير قراءة الطالبات -->
+                <div id="tab-reports" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fa-solid fa-clipboard-user text-indigo-600 ml-2"></i> متابعة قراءة الطالبات وحل الأسئلة
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right border-collapse">
+                               <thead>
+                                    <tr class="border-b border-gray-200 text-gray-600 text-sm">
+                                        <th class="py-3 px-4">اسم الطالبة</th>
+                                        <th class="py-3 px-4">الفصل</th>
+                                        <th class="py-3 px-4">حالة قراءة القصة</th>
+                                        <th class="py-3 px-4">إجابات الأسئلة</th>
+                                        <th class="py-3 px-4">الإجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportsTableBody" class="text-sm text-gray-700">
+                                    <!-- بيانات تجريبية حية -->
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4 font-semibold">سارة أحمد العتيبي</td>
+                                        <td class="py-3 px-4">أولى أ بنات</td>
+                                        <td class="py-3 px-4"><span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">تم الاستماع والقراءة</span></td>
+                                        <td class="py-3 px-4"><span class="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-bold">مكتمل (5/5)</span></td>
+                                        <td class="py-3 px-4">
+                                            <button onclick="openEvaluationModal('سارة أحمد العتيبي')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-bold transition">تقييم وتحفيز</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم منح الشارات -->
+                <div id="tab-badges" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fa-solid fa-medal text-indigo-600 ml-2"></i> منح الأوسمة والشارات التحفيزية
+                        </h2>
+                        <p class="text-sm text-gray-500 mb-4">كرم طالباتك المبدعات بإرسال شارة مباشرة لملفاتهن الشخصية:</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                            <div class="border-2 border-dashed border-indigo-200 p-4 rounded-xl text-center cursor-pointer hover:bg-indigo-50 transition" onclick="selectBadge('قارئة رائع/ة 🌟')">
+                                <div class="text-3xl mb-2">🌟</div>
+                                <div class="font-bold text-sm text-indigo-900">قارئة رائعة</div>
+                            </div>
+                            <div class="border-2 border-dashed border-indigo-200 p-4 rounded-xl text-center cursor-pointer hover:bg-indigo-50 transition" onclick="selectBadge('قارئة مثابرة 📚')">
+                                <div class="text-3xl mb-2">📚</div>
+                                <div class="font-bold text-sm text-indigo-900">قارئة مثابرة</div>
+                            </div>
+                            <div class="border-2 border-dashed border-indigo-200 p-4 rounded-xl text-center cursor-pointer hover:bg-indigo-50 transition" onclick="selectBadge('متميزة الأسبوع 🏆')">
+                                <div class="text-3xl mb-2">🏆</div>
+                                <div class="font-bold text-sm text-indigo-900">متميزة الأسبوع</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">اسم الطالبة المستهدفة:</label>
+                                <input type="text" id="targetStudentName" placeholder="اكتب اسم الطالبة..." class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <button onclick="awardBadge()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl transition">منح الشارة الآن</button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- جافاسكريفت للتحكم وربط الفصول وقاعدة البيانات المقترحة Firebase -->
+    <script>
+        // قاعدة بيانات المعلمات والفصول بناءً على طلبك
+        const teachersData = {
+            "بشائر السريع": ["أولى بنين", "ثاني بنين"],
+            "آلاء الشريف": ["أولى أ بنات", "أولى ب بنات", "ثاني أ بنات", "ثاني ب بنات", "ثالث أ بنات", "ثالث ب بنات", "ثالث بنين"],
+            "حنين القرني": ["رابع أ", "رابع ب", "خامس", "سادس"],
+            "مناهل سندي": ["أولى متوسط أ", "أولى متوسط ب", "ثاني متوسط", "ثالث متوسط"]
+        };
+
+        // افتراض تسجيل دخول المعلمة (أ/ آلاء الشريف أو غيرها)
+        let currentTeacher = "آلاء الشريف"; 
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("teacherNameDisplay").innerText = `أ/ ${currentTeacher}`;
+            loadTeacherClasses();
+            loadUploadSelect();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('aside button').forEach(el => {
+                el.classList.remove('bg-indigo-50', 'text-indigo-700');
+                el.classList.add('text-gray-600', 'hover:bg-gray-50');
+            });
+            document.getElementById(`btn-${tabId}`).classList.add('bg-indigo-50', 'text-indigo-700');
+            document.getElementById(`btn-${tabId}`).classList.remove('text-gray-600', 'hover:bg-gray-50');
+        }
+
+        function loadTeacherClasses() {
+            const grid = document.getElementById("classesGrid");
+            grid.innerHTML = "";
+            const classes = teachersData[currentTeacher] || [];
+            
+            classes.forEach(className => {
+                grid.innerHTML += `
+                    <div class="border border-gray-100 bg-gradient-to-br from-indigo-50/50 to-white p-5 rounded-xl shadow-xs flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-lg">${className}</h3>
+                            <p class="text-xs text-gray-500 mt-1">عدد الطالبات: 24 طالبة مسجلة</p>
+                        </div>
+                        <button onclick="viewClassDetails('${className}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition">استعراض الفصل</button>
+                    </div>
+                `;
+            });
+        }
+
+        function loadUploadSelect() {
+            const select = document.getElementById("uploadClassSelect");
+            select.innerHTML = "";
+            const classes = teachersData[currentTeacher] || [];
+            classes.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        function handleStoryUpload(event) {
+            event.preventDefault();
+            const title = document.getElementById("storyTitle").value;
+            
+            // محاكاة عمل محرك الذكاء الاصطناعي لتوليد الأسئلة بناءً على مستوى القصة
+            const aiContainer = document.getElementById("aiQuestionsContainer");
+            const qList = document.getElementById("generatedQuestionsList");
+            
+            aiContainer.classList.remove("hidden");
+            qList.innerHTML = `
+                <p class="font-semibold text-indigo-900 mb-2">الأسئلة المقترحة لقصة (${title}):</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>Q1: What is the main character's name and problem?</li>
+                    <li>Q2: Where did the story take place?</li>
+                    <li>Q3: How did the character solve the challenge at the end?</li>
+                    <li>Q4: What new English vocabulary did you learn from the story?</li>
+                </ul>
+                <p class="text-xs text-green-600 mt-3 font-bold"><i class="fa-solid fa-circle-check"></i> تم حفظ القصة وإرسالها إلى مكتبة الطالبات الخاصة بالفصل بنجاح!</p>
+            `;
+        }
+
+        let selectedBadgeType = "";
+        function selectBadge(badgeName) {
+            selectedBadgeType = badgeName;
+            alert(`تم اختيار شارة: (${badgeName}). اكتب اسم الطالبة أدناه واضغط منح الشارة.`);
+        }
+
+        function awardBadge() {
+            const student = document.getElementById("targetStudentName").value;
+            if(!student || !selectedBadgeType) {
+                alert("الرجاء اختيار الشارة وكتابة اسم الطالبة بدقة.");
+                return;
+            }
+            alert(`تم بنجاح منح الطالبة (${student}) شارة (${selectedBadgeType}) وستظهر في ملفها الشخصي فوراً!`);
+            document.getElementById("targetStudentName").value = "";
+        }
+
+        function viewClassDetails(className) {
+            alert(`جاري الانتقال لعرض تقارير وطالبات فصل: ${className}`);
+            switchTab('reports');
+        }
+
+        function openEvaluationModal(studentName) {
+            alert(`فتح نافذة تقييم مشاركة وتعليق المعلمة على قراءة الطالبة: ${studentName}`);
+        }
+
+        function logout() {
+            alert("تم تسجیل الخروج بنجاح.");
+        }
+    </script>
+</body>
+</html>
